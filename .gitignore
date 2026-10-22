@@ -1,0 +1,11 @@
+# Office lock files
+~$*
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary files
+*.tmp
