@@ -9,3 +9,17 @@ Desktop.ini
 
 # Temporary files
 *.tmp
+
+# Python 가상환경 / 캐시
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# 비밀키
+.env
+
+# 대용량 원본 (GitHub 50MB 권장 한도 초과) - 각자 로컬에 보관
+250_ORGN_CT_IN_SE_20261017.csv
+250_ORGN_CT_IN_SE_20261017/
+*.zip

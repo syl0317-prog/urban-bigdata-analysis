@@ -21,3 +21,13 @@
    - 수도권 도시철도(지하철) 노선별 역사 명칭, 호선, 위치 정보
 7. **250_ORGN_CT_IN_SE_20261017.zip** (9.1 MB)
    - 서울시 격자/공간 통계 원천 압축 데이터
+   - ⚠️ 용량(압축 해제 시 52MB) 문제로 저장소에서 제외됨. 각자 원본을 내려받아 프로젝트 폴더에 두고 사용
+
+## ⚙️ 환경 설정
+`venv/`는 저장소에 올리지 않습니다. 각자 가상환경을 만들어 사용하세요.
+```
+python -m venv venv
+venv\Scripts\activate
+pip install pandas geopandas requests
+```
+API 키(카카오 등)는 코드에 직접 쓰지 말고 `.env` 파일에 보관합니다 (`.gitignore` 처리됨).
