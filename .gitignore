@@ -23,3 +23,6 @@ __pycache__/
 250_ORGN_CT_IN_SE_20261017.csv
 250_ORGN_CT_IN_SE_20261017/
 *.zip
+
+# 지오코딩 API 캐시
+geocode_cache.json

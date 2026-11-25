@@ -1,0 +1,5 @@
+pandas
+geopandas
+requests
+openpyxl
+python-dotenv

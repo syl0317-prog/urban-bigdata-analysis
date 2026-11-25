@@ -19,15 +19,38 @@
    - 서울시 시내버스 정류소별 고유번호, 정류소명, 좌표(WGS84) 정보
 6. **전체_도시철도역사정보_20260630.xlsx** (313 KB)
    - 수도권 도시철도(지하철) 노선별 역사 명칭, 호선, 위치 정보
-7. **250_ORGN_CT_IN_SE_20261017.zip** (9.1 MB)
-   - 서울시 격자/공간 통계 원천 압축 데이터
-   - ⚠️ 용량(압축 해제 시 52MB) 문제로 저장소에서 제외됨. 각자 원본을 내려받아 프로젝트 폴더에 두고 사용
+7. **250_ORGN_CT_IN_SE_20261017.csv** (52 MB, cp949)
+   - 서울 생활인구(행정동별, 2026.10.17 하루치, 0~23시) — 행정동코드 × 거주지 구 코드별 합계, 성별·연령별 인구 (비식별 값은 `*`)
+   - ⚠️ 용량 문제로 저장소에서 제외됨. 각자 원본(zip, 9.1 MB)을 내려받아 압축을 풀고 CSV를 프로젝트 폴더에 두고 사용
+8. **HangJeongDong_ver20261001.geojson** (34.7 MB) → **seoul_hjd_boundary.geojson** (0.9 MB)
+   - 전국 행정동 경계에서 서울(코드 `11`로 시작)만 추출한 행정동 경계 (`boundary.py`)
+
+## 🧹 가공 데이터 (`clean_tow.py` 생성)
+- **tow_clean.csv** — 견인 현황 정제본 (자치구, 연·월·요일, 위치유형 범주, 품질 플래그)
+- **tow_unique_addresses.csv** — 지오코딩 대상 고유 주소 목록
+- **type_mapping.csv** — 원본 `유형` 문구 → 위치유형 범주 매핑과 건수
+
+```
+python clean_tow.py "서울시 전동킥보드 견인 현황.csv" .
+```
+
+## 📍 주차구역·보호구역 지오코딩 (`geocode_zones.py`, 카카오 로컬 API, WGS84)
+- **parking_geocoded.csv** — 주차구역 329곳 + 위도/경도 (328곳 성공, 99.7%)
+- **protect_zone_geocoded.csv** — 보호구역 1,855곳 (구역유형: 어린이 1,630 / 노인 196 / 장애인 29) + 위도/경도 (1,851곳 성공, 99.8%)
+- **geocode_failures.csv** — 좌표를 찾지 못한 5건 (폐업·주소 변경 추정)
+- 검색 순서: 주소검색 → 키워드(주소) → 주소 표기 정리 후 재검색 → 키워드(시설명/상세위치). 결과 자치구가 원본과 다르면 버림
+- `지오코딩방법`, `매칭주소`, `매칭장소` 열로 각 좌표가 어떻게 잡혔는지 확인 가능
+
+```
+python geocode_zones.py
+```
 
 ## ⚙️ 환경 설정
 `venv/`는 저장소에 올리지 않습니다. 각자 가상환경을 만들어 사용하세요.
 ```
 python -m venv venv
 venv\Scripts\activate
-pip install pandas geopandas requests
+pip install -r requirements.txt
 ```
 API 키(카카오 등)는 코드에 직접 쓰지 말고 `.env` 파일에 보관합니다 (`.gitignore` 처리됨).
+`.env.example`을 복사해 `.env`로 만든 뒤 `KAKAO_REST_API_KEY`에 본인 REST API 키를 넣고, `python test_kakao.py`로 연결을 확인하세요.
