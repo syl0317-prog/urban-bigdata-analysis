@@ -4,3 +4,7 @@ requests
 openpyxl
 python-dotenv
 scipy
+matplotlib
+esda
+libpysal
+mapclassify

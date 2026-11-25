@@ -54,3 +54,13 @@ pip install -r requirements.txt
 ```
 API 키(카카오 등)는 코드에 직접 쓰지 말고 `.env` 파일에 보관합니다 (`.gitignore` 처리됨).
 `.env.example`을 복사해 `.env`로 만든 뒤 `KAKAO_REST_API_KEY`에 본인 REST API 키를 넣고, `python test_kakao.py`로 연결을 확인하세요.
+
+## 🔥 핫스팟·위험 지수·지도 (`hotspot_risk.py`)
+`aggregate_dong.py`를 먼저 실행해 `dong_stats.csv`, `tow_with_dong.csv`를 만든 뒤 실행합니다.
+```
+python hotspot_risk.py
+```
+- **Moran's I** (Queen 인접, 순열 9,999회): 견인 건수, 1만 명당 견인, 위험 지수의 전역 공간 자기상관
+- **Getis-Ord Gi\*** (1만 명당 견인): 핫스팟·콜드스팟 90/95/99% 분류
+- **위험 지수 (0~100)** = 세 요소 백분위의 가중 평균 — 노출(1만 명당 견인) 0.5, 취약 위치 비율(횡단보도·버스정류장·보호구역·점자블록·지하철 출입구, 서울 평균 쪽으로 축소 보정) 0.25, 견인 지점~최근접 주차구역 평균 거리(정밀 좌표만) 0.25
+- 출력: `risk_index.csv`(427개 동 전체), `risk_candidates.csv`(위험 지역 후보 상위 30), `figures/map_count_vs_rate.png`, `figures/map_hotspot_gi.png`, `figures/map_risk_index.png`
