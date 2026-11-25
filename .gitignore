@@ -26,3 +26,9 @@ __pycache__/
 
 # 지오코딩 API 캐시
 geocode_cache.json
+
+# 생활인구 전체(OA-23016) 원본 - 용량 문제로 각자 로컬에 보관
+pop_full_*/
+250_LOCAL_RESD_ADMDONG_*.csv
+# 재생성 가능한 대용량 중간 산출물
+tow_with_dong.csv

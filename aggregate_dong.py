@@ -1,4 +1,4 @@
-import os, sys
+import glob, os, sys
 import numpy as np, pandas as pd, geopandas as gpd
 from scipy.spatial import cKDTree
 
@@ -62,17 +62,44 @@ g[cnt] = g[cnt].fillna(0).astype(int)
 vul = ["견인_횡단보도", "견인_버스정류장·택시승강장", "견인_보호구역", "견인_점자블록·교통약자시설", "견인_지하철역 출입구"]
 g["취약위치견인비율"] = (g[vul].sum(axis=1) / g["견인건수"].replace(0, np.nan)).round(4)
 
-if os.path.exists(POP):
+def read_full_pop(files):
+    """OA-23016 [내국인] 행정동별 서울 생활인구(250m) 일별 CSV들 → 행정동별 (일자×시간) 평균.
+    서울에 머문 내국인 전체(경기·인천 거주 통근자 포함). 헤더는 쉼표, 본문은 파일마다 ';' 또는 ','."""
+    parts = []
+    for f in files:
+        with open(f, encoding="cp949") as fh:
+            cols = [c.strip('"') for c in fh.readline().strip().split(",")]
+            line = fh.readline()
+        sep = ";" if line.count(";") > line.count(",") else ","
+        d = pd.read_csv(f, encoding="cp949", sep=sep, skiprows=1, header=None, dtype=str, usecols=range(4))
+        d.columns = cols[:4]
+        parts.append(d)
+    p = pd.concat(parts)
+    p["행정동코드"] = p["행정동코드"].str.strip()
+    p["v"] = pd.to_numeric(p["생활인구합계"].str.strip(), errors="coerce")
+    print(f"생활인구(전체 내국인): 파일 {len(files)}개, 일자 {p['일자'].nunique()}일")
+    return p.groupby("행정동코드")["v"].mean()
+
+
+# 생활인구: 전체 내국인(OA-23016, pop_full_*/) 우선, 없으면 서울 거주자 한정 파일(OA-22851)
+FULL = sorted(glob.glob("pop_full_*/250_LOCAL_RESD_ADMDONG_*.csv"))
+pop_mean = None
+if FULL:
+    pop_mean = read_full_pop(FULL)
+elif os.path.exists(POP):
     p = pd.read_csv(POP, dtype=str, encoding="cp949", index_col=False,
                     usecols=["일자", "시각", "행정동코드", "거주지코드", "생활인구합계"])
     p["행정동코드"] = p["행정동코드"].str.strip()
     p["v"] = pd.to_numeric(p["생활인구합계"].str.rstrip("."), errors="coerce")
     hourly = p.groupby(["행정동코드", "시각"])["v"].sum()
-    g["생활인구_평균"] = hourly.groupby("행정동코드").mean().round(1)
+    pop_mean = hourly.groupby("행정동코드").mean()
+    print("※ 서울 거주자 한정 생활인구(", POP, ") 사용 — 통근자 제외")
+else:
+    print("※ 생활인구 파일이 없어 인구 보정을 건너뜁니다.")
+if pop_mean is not None:
+    g["생활인구_평균"] = pop_mean.round(1)
     g["견인_1만명당"] = (g["견인건수"] / g["생활인구_평균"] * 10000).round(2)
     print("생활인구 매칭", g["생활인구_평균"].notna().sum(), "/ 427")
-else:
-    print("※", POP, "가 폴더에 없어 인구 보정을 건너뜁니다.")
 
 g.reset_index().to_csv("dong_stats.csv", index=False, encoding="utf-8-sig")
 print(g.describe().T[["count", "mean", "min", "max"]].round(2).to_string())
